@@ -8,11 +8,11 @@ rather than industry practice are labeled design intent.
 
 ## Why everything is a record
 
-Most harnesses treat agent state as ephemeral. The container dies, the history dies.
+Agent state, left alone, is ephemeral: the container dies, the history dies.
 Memory, where it exists at all, is a flat markdown file loaded wholesale: CLAUDE.md is
-read at the start of every session and hard-capped at the first 200 lines or 25 KB [1],
-and AGENTS.md-style instruction files are loaded the same way [2]. There is nothing to
-query, nothing to score, and nothing that stays fresh once the file stops being true.
+read at the start of every session [1], and AGENTS.md-style instruction files are
+loaded the same way [2]. There is nothing to query, nothing to score, and nothing that
+stays fresh once the file stops being true.
 
 Verda inverts that. The log of what happened is the source of truth: every turn, for
 every agent, the full record lands in a database that outlives the daemon that wrote it.

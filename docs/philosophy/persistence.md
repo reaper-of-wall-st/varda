@@ -10,8 +10,8 @@ rather than industry practice are labeled design intent.
 
 Agent state, left alone, is ephemeral: the container dies, the history dies.
 Memory, where it exists at all, is a flat markdown file loaded wholesale: CLAUDE.md is
-read at the start of every session [1], and AGENTS.md-style instruction files are
-loaded the same way [2]. There is nothing to query, nothing to score, and nothing that
+read at the start of every session [^1], and AGENTS.md-style instruction files are
+loaded the same way [^2]. There is nothing to query, nothing to score, and nothing that
 stays fresh once the file stops being true.
 
 Verda inverts that. The log of what happened is the source of truth: every turn, for
@@ -48,8 +48,8 @@ storage engine — one file per project directory, and the file is the archive.
 
 The engine is not an afterthought for the memory section below. The local libSQL build
 ships both index primitives that the design needs: FTS5 full-text search is compiled into
-the libSQL Rust build [3], and libSQL's C core carries native vector column types,
-usable from a local file with no extension [4][5]. The keyword arm and the vector arm of
+the libSQL Rust build [^3], and libSQL's C core carries native vector column types,
+usable from a local file with no extension [^4][^5]. The keyword arm and the vector arm of
 a hybrid index fit inside the same file that already stores the entries. That is what
 "one file" buys you.
 
@@ -125,9 +125,9 @@ what it finds.
 An agent writes a memory entry with an explicit tool call — no daemon-side auto-
 extraction (design intent). Explicit writes are the precision lever: auto-extractors
 produce redundant, low-salience entries, and the memory literature is blunt: over-
-extraction reduces precision [6]. The closest production analog is Letta's
+extraction reduces precision [^6]. The closest production analog is Letta's
 archival memory, which the agent writes through an insert tool and searches on
-demand [7].
+demand [^7].
 
 An entry is a category, a set of labels, and a body. The labels carry the searchable
 meaning; the body is stored as-is and fetched only when the entry is retrieved. Indexing
@@ -143,24 +143,24 @@ both, and the two ranked lists are fused by Reciprocal Rank Fusion.
 
 RRF is the default that needs no tuning. It fuses ranked lists without score
 normalization and without training data, and the paper that introduced it fixed its
-single constant (k = 60) in a pilot run, reporting the choice "was not critical" [8].
+single constant (k = 60) in a pilot run, reporting the choice "was not critical" [^8].
 Hybrid search itself — a BM25 keyword signal fused with a dense-vector signal — is a
-first-class mode across the major vector engines [9][10].
+first-class mode across the major vector engines [^9][^10].
 
 Where the evidence turns, so does the doc. Fusion effectiveness depends on the dataset:
 Vespa's own hybrid tutorial concludes hybrid effectiveness "depends on the dataset and
-the retrieval strategies" and says to evaluate on your own data [10], and vendor
+the retrieval strategies" and says to evaluate on your own data [^10], and vendor
 guidance is explicit that hand-tuned weights without measurement "are unlikely to beat
-the default reliably" [9]. So RRF with its standard constant ships as the default, and
+the default reliably" [^9]. So RRF with its standard constant ships as the default, and
 the fusion weights and thresholds are an open tuning question — a research
 recommendation to keep defaults until an eval set exists, not a design constant.
 
 ### The per-turn loop
 
 Each turn, the index is queried against that turn's input (design intent; the same
-query, retrieve, construct loop that production memory systems run [11]). The fused list
+query, retrieve, construct loop that production memory systems run [^11]). The fused list
 is cut down: a small top-k, anything below a similarity threshold is dropped, and a
-rerank step is the optional precision upgrade [12][13]. The surviving entries' bodies
+rerank step is the optional precision upgrade [^12][^13]. The surviving entries' bodies
 are fetched from the database and appended at the END of the turn's input, under a hard
 token budget (design intent).
 
@@ -191,40 +191,38 @@ token budget (design intent).
 ```
 
 Two reasons the bodies go at the end. LLMs use information at the beginning and the end
-of long contexts far better than the middle — the "lost in the middle" effect [14]. And
+of long contexts far better than the middle — the "lost in the middle" effect [^14]. And
 the turn loop's byte-stable prefix law: appending is the only injection point that does
 not rewrite history and bust the prompt cache ([turn-loop](turn-loop.md)).
 
 The hard budget is the design, not a failure mode. The industry pattern for injected
 memory is a hard cap — Claude Code loads the first 200 lines or 25 KB of its auto memory
-per session, full stop [1] — and bounded retrieval beats full context on tokens and
-latency [15]. Memory that does not fit the budget does not go in; it stays in the file,
+per session, full stop [^1] — and bounded retrieval beats full context on tokens and
+latency [^15]. Memory that does not fit the budget does not go in; it stays in the file,
 retrievable next turn when the input warrants it.
 
 ### Staleness
 
 Memories rot; the architecture has to plan for it. The production answer is to
 invalidate, not delete: Zep's temporal knowledge graph marks contradicted facts invalid
-with timestamps instead of removing them [11], and Mem0's update phase reconciles new
+with timestamps instead of removing them [^11], and Mem0's update phase reconciles new
 entries against similar existing ones at write time with ADD/UPDATE/DELETE/NOOP
-operations [15]. A row of category, labels, and body is the unit those operations act on
+operations [^15]. A row of category, labels, and body is the unit those operations act on
 — update the labels or invalidate the entry, and the index follows, with no rewrite of
 history.
 
-## Sources
-
-[1] https://code.claude.com/docs/en/memory — accessed 2026-08-15
-[2] https://agents.md/ — accessed 2026-08-15
-[3] https://github.com/tursodatabase/libsql/blob/main/libsql-ffi/build.rs — accessed 2026-08-15
-[4] https://github.com/tursodatabase/libsql/tree/main/libsql-sqlite3/src — accessed 2026-08-15
-[5] https://turso.tech/vector — accessed 2026-08-15
-[6] https://langchain-ai.github.io/langmem/concepts/conceptual_guide/ — accessed 2026-08-15
-[7] https://docs.letta.com/v1-sdk/memory/archival-memory — accessed 2026-08-15
-[8] https://dl.acm.org/doi/10.1145/1571941.1572114 — accessed 2026-08-15
-[9] https://qdrant.tech/documentation/concepts/hybrid-queries/ — accessed 2026-08-15
-[10] https://docs.vespa.ai/en/learn/tutorials/hybrid-search.html — accessed 2026-08-15
-[11] https://arxiv.org/abs/2501.13956 — accessed 2026-08-15
-[12] https://github.com/mem0ai/mem0/blob/main/docs/core-concepts/memory-operations/search.mdx — accessed 2026-08-15
-[13] https://qdrant.tech/documentation/search-precision/reranking-semantic-search/index.md — accessed 2026-08-15
-[14] https://arxiv.org/abs/2307.03172 — accessed 2026-08-15
-[15] https://arxiv.org/abs/2504.19413 — accessed 2026-08-15
+[^1]: https://code.claude.com/docs/en/memory — accessed 2026-08-15
+[^2]: https://agents.md/ — accessed 2026-08-15
+[^3]: https://github.com/tursodatabase/libsql/blob/main/libsql-ffi/build.rs — accessed 2026-08-15
+[^4]: https://github.com/tursodatabase/libsql/tree/main/libsql-sqlite3/src — accessed 2026-08-15
+[^5]: https://turso.tech/vector — accessed 2026-08-15
+[^6]: https://langchain-ai.github.io/langmem/concepts/conceptual_guide/ — accessed 2026-08-15
+[^7]: https://docs.letta.com/v1-sdk/memory/archival-memory — accessed 2026-08-15
+[^8]: https://dl.acm.org/doi/10.1145/1571941.1572114 — accessed 2026-08-15
+[^9]: https://qdrant.tech/documentation/concepts/hybrid-queries/ — accessed 2026-08-15
+[^10]: https://docs.vespa.ai/en/learn/tutorials/hybrid-search.html — accessed 2026-08-15
+[^11]: https://arxiv.org/abs/2501.13956 — accessed 2026-08-15
+[^12]: https://github.com/mem0ai/mem0/blob/main/docs/core-concepts/memory-operations/search.mdx — accessed 2026-08-15
+[^13]: https://qdrant.tech/documentation/search-precision/reranking-semantic-search/index.md — accessed 2026-08-15
+[^14]: https://arxiv.org/abs/2307.03172 — accessed 2026-08-15
+[^15]: https://arxiv.org/abs/2504.19413 — accessed 2026-08-15

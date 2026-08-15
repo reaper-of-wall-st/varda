@@ -20,7 +20,7 @@ the agent can do. The sandbox answers "where does that mess live", not "what may
 the agent do".
 
 The internet part costs nothing on the default bridge: containers there get
-outbound access by NAT, no port publishing [3].
+outbound access by NAT, no port publishing [^3].
 
 ## The daemon owns the lifecycle
 
@@ -28,19 +28,19 @@ The user never writes a sandbox script again (design intent). The daemon — the
 `varda-daemon` crate — creates containers on demand through the Docker Engine API
 and owns every step of the container's life.
 
-The Engine API is a REST interface [1]; the current reference is v1.55, served by
-Docker 29.7.x [1]. Its container verb set is the lifecycle itself:
+The Engine API is a REST interface [^1]; the current reference is v1.55, served by
+Docker 29.7.x [^1]. Its container verb set is the lifecycle itself:
 
 ```text
 create  ->  start  ->  inspect (state + IP)  ->  stop/kill  ->  remove
 ```
 
 - `create` provisions the container and `start` brings it up; start is
-  idempotent — the API answers 304 if it is already running [2].
+  idempotent — the API answers 304 if it is already running [^2].
 - `inspect` is how the daemon learns the container's state and its IP on the
-  bridge; inspect is the documented way to learn the address after creation [2].
+  bridge; inspect is the documented way to learn the address after creation [^2].
 - `stop`/`kill` tear it down; `remove` deletes it, and the API refuses with 409
-  while the container is still running [2].
+  while the container is still running [^2].
 
 That verb set is the entire surface, and the daemon is the only actor that calls
 it. An agent inside a container never sees Docker (design intent).
@@ -60,13 +60,13 @@ Each container carries two mounts (design intent):
 - **The shared project workspace** — the world's common directory, `/workspace`
   for every agent in it, mounted read-write. Agents collaborate through it: one
   writes, another reads. It is a bind mount, so the files are the project's
-  files, owned by the host [2].
+  files, owned by the host [^2].
 - **A per-agent `/tmp` scratch** — each agent's own disposable space. This one
   has a hard requirement: the per-agent `/tmp` must be a bind mount or a named
   volume, or it dies with the container. An unmounted `/tmp` is
   container-local storage; a bind mount lives on the host, and a named volume
   lives in Docker-managed storage the API explicitly does not remove when the
-  container is removed [2]. Agents are cattle (below), so the scratch has to
+  container is removed [^2]. Agents are cattle (below), so the scratch has to
   outlive the cattle.
 
 ## No Kubernetes
@@ -132,26 +132,24 @@ Four caveats keep that diagram honest:
 
 1. **The gateway IP is the host's address on the bridge.** On the default
    bridge, containers get addresses from 172.17.0.0/16 and the bridge's
-   gateway — the host itself — is 172.17.0.1 by default [3][2]. It is the
-   container's default route, so anything sent to it reaches the host [3].
+   gateway — the host itself — is 172.17.0.1 by default [^3][^2]. It is the
+   container's default route, so anything sent to it reaches the host [^3].
    Default, not guarantee: the subnet and gateway are configurable in the
-   daemon's bridge settings [3].
+   daemon's bridge settings [^3].
 2. **Docker Desktop runs the engine in a VM.** On Mac and Windows the bridge
    lives inside a lightweight Linux VM, so 172.17.0.1 is the VM's address, not
-   the user's host [4]. The documented host alias there is
-   `host.docker.internal`, which Docker provides automatically [4][5].
+   the user's host [^4]. The documented host alias there is
+   `host.docker.internal`, which Docker provides automatically [^4][^5].
 3. **Bind the queue to the bridge, not loopback.** A listener on 127.0.0.1
    exists only in the host's own network namespace; a container dialing the
    gateway IP can never reach it. The daemon must bind the queue port on the
    bridge interface or 0.0.0.0.
 4. **The per-agent `/tmp` must be a bind mount or a named volume**, or it dies
-   with the container [2]. Restated from The mounts, because it is the one
+   with the container [^2]. Restated from The mounts, because it is the one
    mount that silently breaks "state is sacred".
 
-## Sources
-
-[1] https://docs.docker.com/reference/api/engine/ — accessed 2026-08-15
-[2] https://docs.docker.com/reference/api/engine/version/v1.55.yaml — accessed 2026-08-15
-[3] https://docs.docker.com/network/bridge/ — accessed 2026-08-15
-[4] https://docs.docker.com/desktop/features/networking/ — accessed 2026-08-15
-[5] https://docs.docker.com/compose/how-tos/networking/ — accessed 2026-08-15
+[^1]: https://docs.docker.com/reference/api/engine/ — accessed 2026-08-15
+[^2]: https://docs.docker.com/reference/api/engine/version/v1.55.yaml — accessed 2026-08-15
+[^3]: https://docs.docker.com/network/bridge/ — accessed 2026-08-15
+[^4]: https://docs.docker.com/desktop/features/networking/ — accessed 2026-08-15
+[^5]: https://docs.docker.com/compose/how-tos/networking/ — accessed 2026-08-15

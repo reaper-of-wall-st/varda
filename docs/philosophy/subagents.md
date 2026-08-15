@@ -66,15 +66,15 @@ tool calls and can spawn many children in one turn and await all of them.
 Independent subtasks get parallel children; the parent collects the results
 and moves on. The tree grows wide when the work is parallel, and each child
 works in its own context — the same shape as every subagent system surveyed
-[1-10] — so the parent's context stays small.
+[^1][^2][^3][^4][^5][^6][^7][^8][^9][^10] — so the parent's context stays small.
 
 This is where Verda separates from the industry default. Subagents are table
 stakes in 2026: 8 of the 10 major harnesses surveyed in mid-2026 ship
 parent-child subagents (one of them still marked experimental); the only
-exceptions are two minimalist single-agent tools [1-10]. The feature itself
+exceptions are two minimalist single-agent tools [^1][^2][^3][^4][^5][^6][^7][^8][^9][^10]. The feature itself
 is no longer a differentiator — and in the surveyed set, subagent
 communication is uniformly one-shot: the child works in its own context,
-returns a summary to the parent, and the relationship is over [1-10]. What
+returns a summary to the parent, and the relationship is over [^1][^2][^3][^4][^5][^6][^7][^8][^9][^10]. What
 is unclaimed is the persistent, parent-owned tree: children that stay alive
 between turns, share a world with their siblings, and are closed explicitly
 by their parent. That is Verda's differentiator (design intent), and it is
@@ -139,15 +139,13 @@ requires a terminal), but there is no RL API to design yet.
             closes primaries; the daemon closes nothing
 ```
 
-## Sources
-
-[1] https://docs.anthropic.com/en/docs/claude-code/sub-agents — accessed 2026-08-15 — "Create custom subagents (Claude Code docs)"
-[2] https://learn.chatgpt.com/docs/agent-configuration/subagents.md — accessed 2026-08-15 — "Subagents (Codex/ChatGPT docs)"
-[3] https://github.com/aaif-goose/goose/blob/main/documentation/docs/tutorials/subagents.md — accessed 2026-08-15 — "Using Subagents (Goose tutorial)"
-[4] https://github.com/OpenHands/software-agent-sdk/blob/main/openhands-tools/openhands/tools/delegate/definition.py — accessed 2026-08-15 — "Delegate tool (OpenHands source)"
-[5] https://ampcode.com/manual — accessed 2026-08-15 — "Owner's Manual (Amp)"
-[6] https://docs.cline.bot/features/subagents — accessed 2026-08-15 — "Subagents (Cline docs)"
-[7] https://github.com/continuedev/continue/blob/main/extensions/cli/src/tools/subagent.ts — accessed 2026-08-15 — "subagent tool (Continue CLI source)"
-[8] https://github.com/google-gemini/gemini-cli/blob/main/docs/core/subagents.md — accessed 2026-08-15 — "Subagents (Gemini CLI docs)"
-[9] https://pi.dev/docs/latest — accessed 2026-08-15 — "Pi Documentation (latest; no subagent feature)"
-[10] https://github.com/Aider-AI/aider — accessed 2026-08-15 — "Aider-AI/aider (single-agent; no subagents)"
+[^1]: https://docs.anthropic.com/en/docs/claude-code/sub-agents — accessed 2026-08-15 — "Create custom subagents (Claude Code docs)"
+[^2]: https://learn.chatgpt.com/docs/agent-configuration/subagents.md — accessed 2026-08-15 — "Subagents (Codex/ChatGPT docs)"
+[^3]: https://github.com/aaif-goose/goose/blob/main/documentation/docs/tutorials/subagents.md — accessed 2026-08-15 — "Using Subagents (Goose tutorial)"
+[^4]: https://github.com/OpenHands/software-agent-sdk/blob/main/openhands-tools/openhands/tools/delegate/definition.py — accessed 2026-08-15 — "Delegate tool (OpenHands source)"
+[^5]: https://ampcode.com/manual — accessed 2026-08-15 — "Owner's Manual (Amp)"
+[^6]: https://docs.cline.bot/features/subagents — accessed 2026-08-15 — "Subagents (Cline docs)"
+[^7]: https://github.com/continuedev/continue/blob/main/extensions/cli/src/tools/subagent.ts — accessed 2026-08-15 — "subagent tool (Continue CLI source)"
+[^8]: https://github.com/google-gemini/gemini-cli/blob/main/docs/core/subagents.md — accessed 2026-08-15 — "Subagents (Gemini CLI docs)"
+[^9]: https://pi.dev/docs/latest — accessed 2026-08-15 — "Pi Documentation (latest; no subagent feature)"
+[^10]: https://github.com/Aider-AI/aider — accessed 2026-08-15 — "Aider-AI/aider (single-agent; no subagents)"

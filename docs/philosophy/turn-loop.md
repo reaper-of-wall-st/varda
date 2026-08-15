@@ -8,12 +8,12 @@ design goal, not an optimization.
 
 Every major provider caches the exact prefix of the prompt, from byte one. Change
 anything before a cache point and everything after it is recomputed; there is no
-per-file or per-segment caching [1]. The mechanism differs by provider: on
+per-file or per-segment caching [^1]. The mechanism differs by provider: on
 Anthropic-style providers the harness places explicit cache-control breakpoints,
 while OpenAI and Gemini cache server-side, automatically, with nothing for the
-client to write [2][3]. The economics make the law worth
+client to write [^2][^3]. The economics make the law worth
 building around: a cache read costs about 0.1x the base input price, and a fresh
-cache write costs 1.25x, as documented by both Anthropic and OpenAI [2][4].
+cache write costs 1.25x, as documented by both Anthropic and OpenAI [^2][^4].
 
 So the loop is shaped by the prefix. The stable stuff — system layer, tool
 definitions, project context — sits at the front and is never touched after;
@@ -21,12 +21,12 @@ conversation history is immutable, turns only ever append. New input — a human
 message, a queued event, a tool result, retrieved memory — lands at the tail. The
 model layer Verda builds on ships exactly this pattern as a first-class
 configuration: an hour TTL on the static prefix, five minutes on the moving tail,
-and a cache breakpoint that advances forward as the conversation grows [5].
+and a cache breakpoint that advances forward as the conversation grows [^5].
 
 One correction to a common assumption: the loop itself is explicitly budgeted. The
 model layer's default loop budget is a single model call — a turn that calls a tool
 needs a budget of its own, and Verda sets it deliberately instead of inheriting the
-default [6]. A harness that does not think about its loop budget finds out on the
+default [^6]. A harness that does not think about its loop budget finds out on the
 first tool round-trip.
 
 ## The Queue Drains Every Turn
@@ -46,7 +46,7 @@ message has a position in the log, so replay is well-defined.
 Placement matters too. Appended input is also the right place for anything injected
 — retrieved memory, event summaries — because models read the ends of long contexts
 more reliably than the middle (the U-shape from "Lost in the Middle" holds even for
-explicitly long-context models [7]), and end-of-turn is the only injection point
+explicitly long-context models [^7]), and end-of-turn is the only injection point
 that does not touch the prefix.
 
 ## Long-Running Commands
@@ -77,32 +77,32 @@ to append from the new, shorter prefix — and every major harness documents tha
 this costs exactly one cache miss. Claude Code says it plainly: compaction
 "replaces your message history with a summary. By design, this invalidates the
 conversation layer, since the next request has a new, shorter history that doesn't
-share a prefix with the old one" [8]. OpenHands' own docs are equally frank:
+share a prefix with the old one" [^8]. OpenHands' own docs are equally frank:
 "condensation destroys the prompt cache, but doing so regularly keeps the cost of
-rebuilding the prompt cache low" [9] — the industry does not avoid the miss; it
+rebuilding the prompt cache low" [^9] — the industry does not avoid the miss; it
 budgets it.
 
 **The triggers in the wild fall into four families.**
 
 - Auto threshold: Gemini CLI compresses when history exceeds 50% of the model's
-  token limit, keeping the most recent 30% [10]. Codex has a token limit for
-  auto-compaction, with a hard cap at the model's full context window [11][12].
+  token limit, keeping the most recent 30% [^10]. Codex has a token limit for
+  auto-compaction, with a hard cap at the model's full context window [^11][^12].
   Claude Code compacts by default as you approach the model's limit, with a
-  user-configurable window [8][15].
-- Manual: a /compact command in both Claude Code and Codex [8][12].
+  user-configurable window [^8][^15].
+- Manual: a /compact command in both Claude Code and Codex [^8][^12].
 - Agent-initiated: Codex exposes a new_context tool the model can call — a
   rollover to a new context window that "does not clear, reset, or otherwise
-  affect environment state" [13].
+  affect environment state" [^13].
 - Hard reset with anti-thrash: OpenHands distinguishes a soft trigger (skip and
-  retry) from a hard reset (summarize and restart) when the window overflows [9].
+  retry) from a hard reset (summarize and restart) when the window overflows [^9].
   Claude Code stops auto-compacting and shows an error instead of looping when one
-  large output refills the context immediately after each summary [14].
+  large output refills the context immediately after each summary [^14].
 
 **Why not just run to the limit?** Context rot. "Lost in the Middle" shows
 performance is highest when relevant information sits at the beginning or end of
-the context and degrades significantly in the middle — a U-shape [7]. Chroma's
+the context and degrades significantly in the middle — a U-shape [^7]. Chroma's
 18-model "Context Rot" report finds the degradation is monotonic: performance
-consistently drops as input length grows [16]. The operational reading: compact on
+consistently drops as input length grows [^16]. The operational reading: compact on
 a growth budget, not at the limit, and keep the surviving context high-signal.
 Recent turns sit at the safe end of the U, so the tail is the last thing you
 compress.
@@ -112,7 +112,7 @@ no /compact at all. Instead of summarizing, it keeps the prompt cacheable by
 keeping it small and ordered: a repo map (a graph-ranked map of the files and
 symbols the task touches, held within a token budget) plus /clear and /drop for
 manual resets, and a cache-ordered prefix where the stable content — system prompt,
-read-only files, the map — comes first and the editable files come last [17][18][19].
+read-only files, the map — comes first and the editable files come last [^17][^18][^19].
 The lesson for Verda: preventing growth beats patching it — offload bulky,
 regenerable content out of the history and keep a stable map in place of raw reads.
 
@@ -140,9 +140,9 @@ When the suffix crosses the budget, compaction runs in two stages:
    database and is reloadable through the handle. No model call. Tool output is the
    bulk of agent context, so this alone recovers most of the space. Claude Code's
    documented pass does the same: it "clears older tool outputs first, then
-   summarizes the conversation if needed" [14].
+   summarizes the conversation if needed" [^14].
 2. Stage 2 — a compaction record, only if still over budget. A summarization pass —
-   run against the warm cache, so it costs a fraction of the context size [1] —
+   run against the warm cache, so it costs a fraction of the context size [^1] —
    appends one compaction record. The next rendered prefix is the stable layer, the
    record, and a short suffix.
 
@@ -150,22 +150,22 @@ The trigger is a prefix-scoped growth budget: tokens added since the last
 compaction record, not the total context — the stable layer and the record do not
 count. The model's window is the hard cap, and an anti-thrash stop means that if
 compaction is not making room (one giant output refills the window immediately),
-the loop stops and reports an error instead of looping [14].
+the loop stops and reports an error instead of looping [^14].
 
 The one deliberate cost is exactly one cache miss per compaction — the same tax
-every harness pays [8][9] — after which a shorter, denser prefix re-caches, and
+every harness pays [^8][^9] — after which a shorter, denser prefix re-caches, and
 replay, crash-reload, and auditability all still hold.
 
 The pattern has direct precedent, and Verda's is the same shape made explicit:
 
 - OpenAI's Responses API ships server-side compaction as an opaque "compaction
   item" emitted in the stream, and its docs explicitly authorize dropping items
-  that came before the most recent compaction item [20].
+  that came before the most recent compaction item [^20].
 - OpenHands models forgetting as tombstone-style Condensation events on an
   append-only event log — the log itself is never edited; a view applies the
-  markers when it builds the prompt [9].
+  markers when it builds the prompt [^9].
 - Codex tracks compaction windows (window number and ids) and can budget growth
-  after the carried prefix — the same prefix-scoped trigger [11][12].
+  after the carried prefix — the same prefix-scoped trigger [^11][^12].
 
 ## The Turn Cycle
 
@@ -225,25 +225,23 @@ The pattern has direct precedent, and Verda's is the same shape made explicit:
 
 The loop stays cheap because compaction is a budgeted, appended event — not a rewrite.
 
-## Sources
-
-[1] https://code.claude.com/docs/en/prompt-caching — accessed 2026-08-15
-[2] https://developers.openai.com/api/docs/guides/prompt-caching — accessed 2026-08-15
-[3] https://ai.google.dev/gemini-api/docs/caching — accessed 2026-08-15
-[4] https://platform.claude.com/docs/en/build-with-claude/prompt-caching — accessed 2026-08-15
-[5] https://rig.rs/docs/integrations/model_providers/anthropic — accessed 2026-08-15
-[6] https://github.com/0xPlaygrounds/rig/blob/main/crates/rig-agent/src/agent/prompt_request/mod.rs — accessed 2026-08-15
-[7] https://arxiv.org/abs/2307.03172 — accessed 2026-08-15
-[8] https://code.claude.com/docs/en/context-window — accessed 2026-08-15
-[9] https://github.com/All-Hands-AI/agent-sdk/blob/main/openhands-sdk/openhands/sdk/context/condenser/README.md — accessed 2026-08-15
-[10] https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/context/chatCompressionService.ts — accessed 2026-08-15
-[11] https://developers.openai.com/codex/config-reference — accessed 2026-08-15
-[12] https://github.com/openai/codex/blob/main/codex-rs/core/src/compact.rs — accessed 2026-08-15
-[13] https://github.com/openai/codex/blob/main/codex-rs/core/src/tools/handlers/new_context_window_spec.rs — accessed 2026-08-15
-[14] https://code.claude.com/docs/en/how-claude-code-works — accessed 2026-08-15
-[15] https://code.claude.com/docs/en/model-config — accessed 2026-08-15
-[16] https://research.trychroma.com/context-rot — accessed 2026-08-15
-[17] https://aider.chat/docs/repomap.html — accessed 2026-08-15
-[18] https://aider.chat/docs/usage/caching.html — accessed 2026-08-15
-[19] https://aider.chat/docs/usage/commands.html — accessed 2026-08-15
-[20] https://developers.openai.com/api/docs/guides/compaction — accessed 2026-08-15
+[^1]: https://code.claude.com/docs/en/prompt-caching — accessed 2026-08-15
+[^2]: https://developers.openai.com/api/docs/guides/prompt-caching — accessed 2026-08-15
+[^3]: https://ai.google.dev/gemini-api/docs/caching — accessed 2026-08-15
+[^4]: https://platform.claude.com/docs/en/build-with-claude/prompt-caching — accessed 2026-08-15
+[^5]: https://rig.rs/docs/integrations/model_providers/anthropic — accessed 2026-08-15
+[^6]: https://github.com/0xPlaygrounds/rig/blob/main/crates/rig-agent/src/agent/prompt_request/mod.rs — accessed 2026-08-15
+[^7]: https://arxiv.org/abs/2307.03172 — accessed 2026-08-15
+[^8]: https://code.claude.com/docs/en/context-window — accessed 2026-08-15
+[^9]: https://github.com/All-Hands-AI/agent-sdk/blob/main/openhands-sdk/openhands/sdk/context/condenser/README.md — accessed 2026-08-15
+[^10]: https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/context/chatCompressionService.ts — accessed 2026-08-15
+[^11]: https://developers.openai.com/codex/config-reference — accessed 2026-08-15
+[^12]: https://github.com/openai/codex/blob/main/codex-rs/core/src/compact.rs — accessed 2026-08-15
+[^13]: https://github.com/openai/codex/blob/main/codex-rs/core/src/tools/handlers/new_context_window_spec.rs — accessed 2026-08-15
+[^14]: https://code.claude.com/docs/en/how-claude-code-works — accessed 2026-08-15
+[^15]: https://code.claude.com/docs/en/model-config — accessed 2026-08-15
+[^16]: https://research.trychroma.com/context-rot — accessed 2026-08-15
+[^17]: https://aider.chat/docs/repomap.html — accessed 2026-08-15
+[^18]: https://aider.chat/docs/usage/caching.html — accessed 2026-08-15
+[^19]: https://aider.chat/docs/usage/commands.html — accessed 2026-08-15
+[^20]: https://developers.openai.com/api/docs/guides/compaction — accessed 2026-08-15

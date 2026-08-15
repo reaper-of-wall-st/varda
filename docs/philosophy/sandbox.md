@@ -72,8 +72,7 @@ Each container carries two mounts (design intent):
 ## No Kubernetes
 
 No orchestration layer (design intent). Plain Docker, long-lived containers.
-Kubernetes buys fleet scheduling and rolling deploys; Verda needs neither. One
-host, one daemon, one container per agent, and a recreate-when-dead loop. If
+One host, one daemon, one container per agent, and a recreate-when-dead loop. If
 that is too small, the fix is another directory and another daemon, not a
 control plane.
 

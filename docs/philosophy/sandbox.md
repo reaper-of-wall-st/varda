@@ -3,7 +3,7 @@
 Every agent gets its own fully-furnished container: the user stops writing sandbox
 scripts, and the daemon owns the whole lifecycle.
 
-Verda is greenfield: the four crates are scaffolds and none of this exists yet.
+Varda is greenfield: the four crates are scaffolds and none of this exists yet.
 Everything in this document is design intent, stated as such, not shipped
 capability.
 

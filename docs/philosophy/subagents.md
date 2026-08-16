@@ -1,9 +1,9 @@
 # Subagents
 
-The tree is Verda's coordination model, and it exists for humans and for
+The tree is Varda's coordination model, and it exists for humans and for
 reinforcement learning.
 
-Every agent in a Verda world is a node in one strict tree. This doc is that
+Every agent in a Varda world is a node in one strict tree. This doc is that
 tree: the topology rule, who owns a child's lifecycle, what the root looks
 like, how fan-out works, where the human sits, and how a program drives the
 whole thing.
@@ -68,7 +68,7 @@ and moves on. The tree grows wide when the work is parallel, and each child
 works in its own context — the same shape as every subagent system surveyed
 [^1][^2][^3][^4][^5][^6][^7][^8][^9][^10] — so the parent's context stays small.
 
-This is where Verda separates from the industry default. Subagents are table
+This is where Varda separates from the industry default. Subagents are table
 stakes in 2026: 8 of the 10 major harnesses surveyed in mid-2026 ship
 parent-child subagents (one of them still marked experimental); the only
 exceptions are two minimalist single-agent tools [^1][^2][^3][^4][^5][^6][^7][^8][^9][^10]. The feature itself
@@ -77,7 +77,7 @@ communication is uniformly one-shot: the child works in its own context,
 returns a summary to the parent, and the relationship is over [^1][^2][^3][^4][^5][^6][^7][^8][^9][^10]. What
 is unclaimed is the persistent, parent-owned tree: children that stay alive
 between turns, share a world with their siblings, and are closed explicitly
-by their parent. That is Verda's differentiator (design intent), and it is
+by their parent. That is Varda's differentiator (design intent), and it is
 the difference between a subagent feature and a coordination model.
 
 ## The human sits on top
@@ -107,7 +107,7 @@ That last line is the north star, and it is why the tree exists for humans
 and RL. An environment that trains subagent-based behavior can drive the
 harness end to end — spawn a world, feed tasks, observe traces, close
 agents — with no human UI in the path. That is a north star, not a v1
-deliverable: Verda designs for it (everything scriptable, nothing that
+deliverable: Varda designs for it (everything scriptable, nothing that
 requires a terminal), but there is no RL API to design yet.
 
 ## The tree, drawn

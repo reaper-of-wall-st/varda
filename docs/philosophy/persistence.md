@@ -14,7 +14,7 @@ read at the start of every session [^1], and AGENTS.md-style instruction files a
 loaded the same way [^2]. There is nothing to query, nothing to score, and nothing that
 stays fresh once the file stops being true.
 
-Verda inverts that. The log of what happened is the source of truth: every turn, for
+Varda inverts that. The log of what happened is the source of truth: every turn, for
 every agent, the full record lands in a database that outlives the daemon that wrote it.
 A crash is then an interruption, not a loss, because the state was on disk the moment it
 happened.
@@ -35,7 +35,7 @@ compacted; the turn loop owns its shape ([turn-loop](turn-loop.md)).
 
 Ownership follows one rule: the daemon owns persistence (design intent). Agents never
 write their own state. A turn's record reaches the daemon over the message queue — the
-same firehose everything else in Verda travels on — and the daemon's persistence layer
+same firehose everything else in Varda travels on — and the daemon's persistence layer
 is a client of that queue, appending each turn as it arrives. One writer, one file, one
 owner, and no agent-local state files to orphan.
 

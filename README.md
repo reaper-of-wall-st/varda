@@ -1,10 +1,10 @@
-# Verda
+# Varda
 
-Verda — the world's best LLM harness.
+Varda — the world's best LLM harness.
 
-## What Verda is
+## What Varda is
 
-Verda is a Rust-based, multi-agent, containerized LLM agent harness. The
+Varda is a Rust-based, multi-agent, containerized LLM agent harness. The
 design in one paragraph: one process, the daemon, owns a whole world of
 agents in a project directory. Every agent runs in its own fully furnished
 container; every message between agents, or between an agent and the
@@ -120,7 +120,7 @@ codebase can stay small enough for one person to review in full.
 
 ## Model-agnostic by design
 
-Verda does not assume one model provider. The model layer is a
+Varda does not assume one model provider. The model layer is a
 replaceable seam in the turn loop, and the architecture's job is to keep
 the prompt prefix byte-stable so that whatever provider sits behind the
 seam caches well. No provider is named in these docs, and no model crate
@@ -136,7 +136,7 @@ will be: the harness is the product, not the model contract.
 
 ## Status
 
-Verda is greenfield and docs-first. Nothing runs yet, nothing is
+Varda is greenfield and docs-first. Nothing runs yet, nothing is
 installable, and nothing in these docs describes shipped capability: the
 architecture above is design intent, and the four crates are scaffolds.
 

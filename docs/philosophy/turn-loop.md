@@ -1,6 +1,6 @@
 # The Turn Loop
 
-Verda's turn loop is built around one law: the history prefix is byte-stable, new
+Varda's turn loop is built around one law: the history prefix is byte-stable, new
 input is appended, and nothing is restructured — because prompt-cache hits are a
 design goal, not an optimization.
 
@@ -19,13 +19,13 @@ So the loop is shaped by the prefix. The stable stuff — system layer, tool
 definitions, project context — sits at the front and is never touched after;
 conversation history is immutable, turns only ever append. New input — a human
 message, a queued event, a tool result, retrieved memory — lands at the tail. The
-model layer Verda builds on ships exactly this pattern as a first-class
+model layer Varda builds on ships exactly this pattern as a first-class
 configuration: an hour TTL on the static prefix, five minutes on the moving tail,
 and a cache breakpoint that advances forward as the conversation grows [^5].
 
 One correction to a common assumption: the loop itself is explicitly budgeted. The
 model layer's default loop budget is a single model call — a turn that calls a tool
-needs a budget of its own, and Verda sets it deliberately instead of inheriting the
+needs a budget of its own, and Varda sets it deliberately instead of inheriting the
 default [^6]. A harness that does not think about its loop budget finds out on the
 first tool round-trip.
 
@@ -37,7 +37,7 @@ the appended input of the next turn. Nothing in the prefix is ever rewritten to
 make room; the queue's contents arrive as new bytes at the tail.
 
 This is what makes the law work under pressure. A reactive harness is tempted to
-rewrite context to stay current. Verda's answer: make the world come to the loop,
+rewrite context to stay current. Varda's answer: make the world come to the loop,
 not the loop to the world — the queue buffers, the drain serializes, and the
 append keeps the prefix intact. The prefix stays byte-identical across turns, so
 the cache hits every turn; and ordering is total and auditable — every queued
@@ -113,12 +113,12 @@ keeping it small and ordered: a repo map (a graph-ranked map of the files and
 symbols the task touches, held within a token budget) plus /clear and /drop for
 manual resets, and a cache-ordered prefix where the stable content — system prompt,
 read-only files, the map — comes first and the editable files come last [^17][^18][^19].
-The lesson for Verda: preventing growth beats patching it — offload bulky,
+The lesson for Varda: preventing growth beats patching it — offload bulky,
 regenerable content out of the history and keep a stable map in place of raw reads.
 
-## Verda's Compaction
+## Varda's Compaction
 
-Design intent, with cited precedents: Verda does not rewrite history. Compaction is
+Design intent, with cited precedents: Varda does not rewrite history. Compaction is
 an appended checkpoint record on the append-only log — the raw log, everything
 persisted every turn, is never rewritten. The rendered prefix is a pure function of
 three parts:
@@ -156,7 +156,7 @@ The one deliberate cost is exactly one cache miss per compaction — the same ta
 every harness pays [^8][^9] — after which a shorter, denser prefix re-caches, and
 replay, crash-reload, and auditability all still hold.
 
-The pattern has direct precedent, and Verda's is the same shape made explicit:
+The pattern has direct precedent, and Varda's is the same shape made explicit:
 
 - OpenAI's Responses API ships server-side compaction as an opaque "compaction
   item" emitted in the stream, and its docs explicitly authorize dropping items

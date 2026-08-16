@@ -1,8 +1,8 @@
 # The Message Queue
 
-One queue, inside the daemon, is the firehose of Verda's entire transport chain: everything is serialized in and out of it, and nothing travels any other way.
+One queue, inside the daemon, is the firehose of Varda's entire transport chain: everything is serialized in and out of it, and nothing travels any other way.
 
-Agent communication is the part of the harness that most other systems sleep on. The mainstream production agent frameworks hand results off in-process: in Claude Code a subagent finishes and its result returns to the main conversation [^1], and LangGraph's deployable server queues runs behind an HTTP API, no broker named [^2]. That is fine while the process is alive. When the orchestrator dies, every in-flight message and every unfinished trace dies with it. Verda's answer is not a mesh of per-agent channels with a control plane bolted on. It is one queue, durable, and everything flows through it. Nothing here is implemented yet — the crates are scaffolds — but this is an invariant the implementation must respect, not an implementation detail.
+Agent communication is the part of the harness that most other systems sleep on. The mainstream production agent frameworks hand results off in-process: in Claude Code a subagent finishes and its result returns to the main conversation [^1], and LangGraph's deployable server queues runs behind an HTTP API, no broker named [^2]. That is fine while the process is alive. When the orchestrator dies, every in-flight message and every unfinished trace dies with it. Varda's answer is not a mesh of per-agent channels with a control plane bolted on. It is one queue, durable, and everything flows through it. Nothing here is implemented yet — the crates are scaffolds — but this is an invariant the implementation must respect, not an implementation detail.
 
 ## One queue, inside the daemon
 
@@ -44,7 +44,7 @@ An in-memory queue dies with its process. That is unacceptable here in a specifi
 
 Note the shape of that: the database is a projection of the firehose, not a second source of truth. There is one write path — the queue — and everything downstream reads from it. That is what makes the system debuggable: any behavior it has ever exhibited is reconstructable from the log.
 
-The concrete mechanism is a later crate pass, and the shape research recommends is an in-process queue over a durable append-only log. The constraint comes from one hard fact: NATS cannot be embedded in-process in Rust. There is no embeddable `nats-server` crate [^6]; the only Rust artifact with that name is an unpublished test helper [^7] whose source spawns the external Go binary [^8]. The closest off-the-shelf durable store — NATS JetStream's file store, where messages survive restarts and can be replayed [^9] — sits behind exactly that second process. So the durable mechanism is Verda's own code, and the work is bounded: append, fsync, replay, under the same `.varda/` directory as the rest of the state. The research lane's top recommendation is exactly this shape; the decision belongs to the crate pass.
+The concrete mechanism is a later crate pass, and the shape research recommends is an in-process queue over a durable append-only log. The constraint comes from one hard fact: NATS cannot be embedded in-process in Rust. There is no embeddable `nats-server` crate [^6]; the only Rust artifact with that name is an unpublished test helper [^7] whose source spawns the external Go binary [^8]. The closest off-the-shelf durable store — NATS JetStream's file store, where messages survive restarts and can be replayed [^9] — sits behind exactly that second process. So the durable mechanism is Varda's own code, and the work is bounded: append, fsync, replay, under the same `.varda/` directory as the rest of the state. The research lane's top recommendation is exactly this shape; the decision belongs to the crate pass.
 
 ## The topology
 

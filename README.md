@@ -130,7 +130,7 @@ will be: the harness is the product, not the model contract.
 
 - [Subagents](docs/philosophy/subagents.md): the strict tree, Genesis, the human's place.
 - [Sandbox](docs/philosophy/sandbox.md): one fully furnished container per agent.
-- [Message queue](docs/philosophy/message-queue.md): one durable firehose.
+- [Message queue](docs/philosophy/message-queue.md): one in-process queue; the database is the record.
 - [Persistence](docs/philosophy/persistence.md): persist everything every turn; reload it.
 - [Turn loop](docs/philosophy/turn-loop.md): the byte-stable prefix and compaction.
 

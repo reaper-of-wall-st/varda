@@ -119,9 +119,10 @@ regenerable content out of the history and keep a stable map in place of raw rea
 ## Varda's Compaction
 
 Design intent, with cited precedents: Varda does not rewrite history. Compaction is
-an appended checkpoint record on the append-only log — the raw log, everything
-persisted every turn, is never rewritten. The rendered prefix is a pure function of
-three parts:
+an appended checkpoint record on the append-only log — the raw log is the
+database's append-only record stream in `.varda/` (turso), not a broker file
+log. Everything is persisted every turn, and the log is never rewritten. The
+rendered prefix is a pure function of three parts:
 
 ```text
   [ stable system layer ] + [ latest compaction record ] + [ high-signal suffix ]
@@ -202,8 +203,9 @@ The pattern has direct precedent, and Varda's is the same shape made explicit:
                    v
   +-------------------------------------+
   | 6. persist to the database          |   every turn, every agent
-  +-------------------------------------+   (the raw log is append-only and
-                   |   never rewritten)
+  +-------------------------------------+   (the raw log: the database's
+                   |   append-only record stream in
+                   |   .varda/ (turso), never rewritten)
                    v
   +-------------------------------------+      +----------------------------------+
   | 7. prefix growth over budget?       |+----->| 8. compaction checkpoint         |

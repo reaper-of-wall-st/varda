@@ -1,0 +1,69 @@
+[submodule "libs/anyhow"]
+	path = libs/anyhow
+	url = https://github.com/dtolnay/anyhow
+[submodule "libs/bollard"]
+	path = libs/bollard
+	url = https://github.com/fussybeaver/bollard
+[submodule "libs/chrono"]
+	path = libs/chrono
+	url = https://github.com/chronotope/chrono
+[submodule "libs/clap"]
+	path = libs/clap
+	url = https://github.com/clap-rs/clap
+[submodule "libs/comfy-table"]
+	path = libs/comfy-table
+	url = https://github.com/nukesor/comfy-table
+[submodule "libs/crossterm"]
+	path = libs/crossterm
+	url = https://github.com/crossterm-rs/crossterm
+[submodule "libs/indoc"]
+	path = libs/indoc
+	url = https://github.com/dtolnay/indoc
+[submodule "libs/msgpack-rust"]
+	path = libs/msgpack-rust
+	url = https://github.com/3Hren/msgpack-rust
+[submodule "libs/owo-colors"]
+	path = libs/owo-colors
+	url = https://github.com/owo-colors/owo-colors
+[submodule "libs/rand"]
+	path = libs/rand
+	url = https://github.com/rust-random/rand
+[submodule "libs/ratatui"]
+	path = libs/ratatui
+	url = https://github.com/ratatui/ratatui
+[submodule "libs/rig"]
+	path = libs/rig
+	url = https://github.com/0xPlaygrounds/rig
+[submodule "libs/rust-url"]
+	path = libs/rust-url
+	url = https://github.com/servo/rust-url
+[submodule "libs/serde"]
+	path = libs/serde
+	url = https://github.com/serde-rs/serde
+[submodule "libs/thiserror"]
+	path = libs/thiserror
+	url = https://github.com/dtolnay/thiserror
+[submodule "libs/tokio"]
+	path = libs/tokio
+	url = https://github.com/tokio-rs/tokio
+[submodule "libs/tracing"]
+	path = libs/tracing
+	url = https://github.com/tokio-rs/tracing
+[submodule "libs/tui-input"]
+	path = libs/tui-input
+	url = https://github.com/sayanarijit/tui-input
+[submodule "libs/tui-markdown"]
+	path = libs/tui-markdown
+	url = https://github.com/joshka/tui-markdown
+[submodule "libs/tui-rs-tree-widget"]
+	path = libs/tui-rs-tree-widget
+	url = https://github.com/EdJoPaTo/tui-rs-tree-widget
+[submodule "libs/turso"]
+	path = libs/turso
+	url = https://github.com/tursodatabase/turso
+[submodule "libs/uuid"]
+	path = libs/uuid
+	url = https://github.com/uuid-rs/uuid
+[submodule "libs/zenoh"]
+	path = libs/zenoh
+	url = https://github.com/eclipse-zenoh/zenoh

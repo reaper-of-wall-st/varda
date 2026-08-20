@@ -1,4 +1,0 @@
-[workspace]
-members = ["varda-core", "varda-daemon", "varda-node", "varda-tui"]
-resolver = "2"
-

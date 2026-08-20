@@ -41,17 +41,23 @@ owner, and no agent-local state files to orphan.
 
 ## Where it lives: one database file in `.varda/`
 
-Storage is an embedded **libSQL (Turso's fork of SQLite)** database file in `.varda/` in
-the project directory (design intent). The same directory holds the daemon's log and
-lock files; the database is the third resident. No external database process, no second
-storage engine — one file per project directory, and the file is the archive.
+Storage is an embedded **turso** database file in `.varda/` in the project directory
+(design intent). The engine is the `turso` crate (Turso Rust API, 0.7.2) — the Turso
+team's current Rust engine, whose repo states it replaces libSQL as the intended
+direction [^16]. The same directory holds the daemon's log and lock files; the database
+is the third resident. No external database process, no second storage engine — one
+file per project directory, and the file is the archive. The file is in the SQLite file
+format, and it is the primary store: remote Turso cloud is a sync target over hrana v2,
+local-first — push and pull, never a substitute for the local file [^17].
 
-The engine is not an afterthought for the memory section below. The local libSQL build
-ships both index primitives that the design needs: FTS5 full-text search is compiled into
-the libSQL Rust build [^3], and libSQL's C core carries native vector column types,
-usable from a local file with no extension [^4][^5]. The keyword arm and the vector arm of
-a hybrid index fit inside the same file that already stores the entries. That is what
-"one file" buys you.
+The engine is not an afterthought for the memory section below. The turso engine
+ships both index primitives that the design needs: full-text search is Turso-native — a
+tantivy-backed `USING fts` index, experimental and feature-gated at this pin rather than
+SQLite FTS5 [^3] — and vector search is exact over BLOB-encoded embeddings with the
+built-in vector distance functions, dense ANN indexing on the roadmap [^4][^5]. Both arms
+are accepted at this pin, adequate at per-world scale: the keyword arm and the vector
+arm of a hybrid index fit inside the same file that already stores the entries. That is
+what "one file" buys you.
 
 ```text
  agent (container)
@@ -73,7 +79,7 @@ a hybrid index fit inside the same file that already stores the entries. That is
 +---------------------------------------------------------------+
 | .varda/ in the project directory                              |
 |                                                               |
-|  libSQL database file:                                        |
+|  turso database file:                                         |
 |   full traces | compaction records | memory entries           |
 |   (labels + bodies)                                           |
 +---------------------------------------------------------------+
@@ -137,8 +143,8 @@ the index — the research recommendation for this shape, and a natural fit for 
 
 ### The hybrid label index
 
-Labels are hybrid-indexed (design intent): a keyword arm (FTS5) and a vector arm (dense
-embeddings of the label text), both in the same database file. A query runs against
+Labels are hybrid-indexed (design intent): a keyword arm (full-text) and a vector arm
+(dense embeddings of the label text), both in the same database file. A query runs against
 both, and the two ranked lists are fused by Reciprocal Rank Fusion.
 
 RRF is the default that needs no tuning. It fuses ranked lists without score
@@ -168,11 +174,11 @@ token budget (design intent).
  turn input
      |
      v
- 1. query both label indexes: FTS5 (keyword) + vector  <----+
+ 1. query both label indexes: FTS (keyword) + vector   <----+
                                                        +----+------------------+
-                                                       | libSQL file, .varda/  |
+                                                       | turso file, .varda/   |
                                                        |  label indexes:       |
-                                                       |   FTS5 (keyword)      |
+                                                       |   full-text (keyword) |
                                                        |   vector (dense)      |
                                                        |  entry bodies         |
                                                        +----+------------------+
@@ -213,8 +219,8 @@ history.
 
 [^1]: https://code.claude.com/docs/en/memory — accessed 2026-08-15
 [^2]: https://agents.md/ — accessed 2026-08-15
-[^3]: https://github.com/tursodatabase/libsql/blob/main/libsql-ffi/build.rs — accessed 2026-08-15
-[^4]: https://github.com/tursodatabase/libsql/tree/main/libsql-sqlite3/src — accessed 2026-08-15
+[^3]: https://github.com/tursodatabase/turso/blob/main/docs/fts.md — accessed 2026-08-19
+[^4]: https://github.com/tursodatabase/turso/tree/main/core/vector — accessed 2026-08-19
 [^5]: https://turso.tech/vector — accessed 2026-08-15
 [^6]: https://langchain-ai.github.io/langmem/concepts/conceptual_guide/ — accessed 2026-08-15
 [^7]: https://docs.letta.com/v1-sdk/memory/archival-memory — accessed 2026-08-15
@@ -226,3 +232,5 @@ history.
 [^13]: https://qdrant.tech/documentation/search-precision/reranking-semantic-search/index.md — accessed 2026-08-15
 [^14]: https://arxiv.org/abs/2307.03172 — accessed 2026-08-15
 [^15]: https://arxiv.org/abs/2504.19413 — accessed 2026-08-15
+[^16]: https://github.com/tursodatabase/turso — accessed 2026-08-19
+[^17]: https://github.com/tursodatabase/turso/tree/main/sync — accessed 2026-08-19

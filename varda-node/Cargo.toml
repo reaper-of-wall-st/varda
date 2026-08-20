@@ -2,5 +2,23 @@
 name = "varda-node"
 version = "0.1.0"
 edition = "2024"
+workspace = "../app"
 
 [dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+rand = { workspace = true }
+rig = { workspace = true }
+rig-agent = { workspace = true }
+rig-core = { workspace = true }
+rig-derive = { workspace = true }
+rmp-serde = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+uuid = { workspace = true }
+zenoh = { workspace = true }

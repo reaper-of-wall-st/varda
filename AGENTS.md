@@ -63,7 +63,7 @@ Rules:
 
 ## Workspace rules
 
-All deps are declared exactly once in the root `[workspace.dependencies]` as
+All deps are declared exactly once in the `[workspace.dependencies]` of the workspace root manifest (`app/Cargo.toml`) as
 `{ path, version, features?, default-features? }`. Member manifests reference each dep
 with `{ workspace = true }` only — no path, version, or features in members.
 `Cargo.lock` is committed and changes in the same commit as the manifest it locks.
